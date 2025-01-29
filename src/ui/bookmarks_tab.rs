@@ -747,7 +747,7 @@ impl Component for BookmarksTab<'_> {
                 return Ok(ComponentInputResult::Handled);
             }
 
-            if self.bookmark_panel.input(key) {
+            if self.bookmark_panel.input(&event) {
                 return Ok(ComponentInputResult::Handled);
             }
 

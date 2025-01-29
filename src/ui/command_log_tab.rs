@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use ansi_to_tui::IntoText;
 use ratatui::{
-    crossterm::event::{Event, KeyCode, KeyEventKind},
+    crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind},
     prelude::*,
     widgets::*,
 };
@@ -236,15 +236,11 @@ impl Component for CommandLogTab {
     }
 
     fn input(&mut self, _commander: &mut Commander, event: Event) -> Result<ComponentInputResult> {
-        if let Event::Key(key) = event {
-            if key.kind != KeyEventKind::Press {
-                return Ok(ComponentInputResult::Handled);
-            }
+        if self.output_panel.input(&event) {
+            return Ok(ComponentInputResult::Handled);
+        }
 
-            if self.output_panel.input(key) {
-                return Ok(ComponentInputResult::Handled);
-            }
-
+        if let Event::Key(key @ KeyEvent { kind: KeyEventKind::Press, .. }) = event {
             match key.code {
                 KeyCode::Char('j') | KeyCode::Down => {
                     self.scroll_commands(1);

@@ -506,25 +506,29 @@ impl Component for LogTab<'_> {
             return Ok(ComponentInputResult::Handled);
         }
 
+        if self.popup.is_opened() {
+            if let Event::Key(key) = event {
+                if key.kind == KeyEventKind::Press {
+                    if matches!(
+                        self.keybinds.match_event(key),
+                        LogTabEvent::ClosePopup | LogTabEvent::Cancel
+                    ) {
+                        self.popup = ConfirmDialogState::default();
+                    } else {
+                        self.popup.handle(&key);
+                    }
+                }
+            }
+
+            return Ok(ComponentInputResult::Handled);
+        }
+
+        if self.head_panel.input(&event) {
+            return Ok(ComponentInputResult::Handled);
+        }
+
         if let Event::Key(key) = event {
             if key.kind != KeyEventKind::Press {
-                return Ok(ComponentInputResult::Handled);
-            }
-
-            if self.popup.is_opened() {
-                if matches!(
-                    self.keybinds.match_event(key),
-                    LogTabEvent::ClosePopup | LogTabEvent::Cancel
-                ) {
-                    self.popup = ConfirmDialogState::default();
-                } else {
-                    self.popup.handle(&key);
-                }
-
-                return Ok(ComponentInputResult::Handled);
-            }
-
-            if self.head_panel.input(key) {
                 return Ok(ComponentInputResult::Handled);
             }
 

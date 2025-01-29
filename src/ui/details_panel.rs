@@ -1,5 +1,5 @@
 use ratatui::{
-    crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
+    crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseEventKind},
     layout::Rect,
     text::Text,
     widgets::{Paragraph, Wrap},
@@ -48,24 +48,32 @@ impl DetailsPanel {
     }
 
     /// Handle input. Returns bool of if event was handled
-    pub fn input(&mut self, key: KeyEvent) -> bool {
-        match key.code {
-            KeyCode::Char('e') if key.modifiers.contains(KeyModifiers::CONTROL) => self.scroll(1),
-            KeyCode::Char('y') if key.modifiers.contains(KeyModifiers::CONTROL) => self.scroll(-1),
-            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.scroll(self.height as isize / 2)
+    pub fn input(&mut self, event: &Event) -> bool {
+        match event {
+            Event::Key(key @ KeyEvent { kind: KeyEventKind::Press, .. }) => match key.code {
+                KeyCode::Char('e') if key.modifiers.contains(KeyModifiers::CONTROL) => self.scroll(1),
+                KeyCode::Char('y') if key.modifiers.contains(KeyModifiers::CONTROL) => self.scroll(-1),
+                KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    self.scroll(self.height as isize / 2)
+                }
+                KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    self.scroll((self.height as isize / 2).saturating_neg())
+                }
+                KeyCode::Char('f') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    self.scroll(self.height as isize / 2)
+                }
+                KeyCode::Char('b') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    self.scroll((self.height as isize).saturating_neg())
+                }
+                KeyCode::Char('W') => {
+                    self.wrap = !self.wrap;
+                }
+                _ => return false,
             }
-            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.scroll((self.height as isize / 2).saturating_neg())
-            }
-            KeyCode::Char('f') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.scroll(self.height as isize / 2)
-            }
-            KeyCode::Char('b') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.scroll((self.height as isize).saturating_neg())
-            }
-            KeyCode::Char('W') => {
-                self.wrap = !self.wrap;
+            Event::Mouse(mouse) => match mouse.kind {
+                MouseEventKind::ScrollDown => self.scroll(3),
+                MouseEventKind::ScrollUp => self.scroll(-3),
+                _ => return false,
             }
             _ => return false,
         };
