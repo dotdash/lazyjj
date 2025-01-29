@@ -1,5 +1,7 @@
 #![allow(clippy::borrow_interior_mutable_const)]
 
+use std::time::{Duration, Instant};
+
 use ansi_to_tui::IntoText;
 use anyhow::Result;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers};
@@ -57,6 +59,8 @@ pub struct LogTab<'a> {
     describe_after_new: bool,
 
     config: Config,
+
+    last_update: Instant,
 }
 
 fn get_head_index(head: &Head, log_output: &Result<LogOutput, CommandError>) -> Option<usize> {
@@ -125,6 +129,8 @@ impl LogTab<'_> {
             describe_after_new: false,
 
             config: commander.env.config.clone(),
+
+            last_update: Instant::now() - Duration::from_secs(1),
         })
     }
 
@@ -187,11 +193,14 @@ impl Component for LogTab<'_> {
     }
 
     fn update(&mut self, commander: &mut Commander) -> Result<Option<ComponentAction>> {
-        let latest_head = commander.get_head_latest(&self.head)?;
-        if latest_head != self.head {
-            self.head = latest_head;
-            self.refresh_log_output(commander);
-            self.refresh_head_output(commander);
+        if self.last_update.elapsed().as_secs() >= 1 {
+            let latest_head = commander.get_head_latest(&self.head)?;
+            if latest_head != self.head {
+                self.head = latest_head;
+                self.refresh_log_output(commander);
+                self.refresh_head_output(commander);
+            }
+            self.last_update = Instant::now();
         }
 
         // Check for popup action
@@ -483,22 +492,26 @@ impl Component for LogTab<'_> {
             return Ok(ComponentInputResult::Handled);
         }
 
+        if self.popup.is_opened() {
+            if let Event::Key(key) = event {
+                if key.kind == KeyEventKind::Press {
+                    if key.code == KeyCode::Char('q') || key.code == KeyCode::Esc {
+                        self.popup = ConfirmDialogState::default();
+                    } else {
+                        self.popup.handle(key);
+                    }
+                }
+            }
+
+            return Ok(ComponentInputResult::Handled);
+        }
+
+        if self.head_panel.input(&event) {
+            return Ok(ComponentInputResult::Handled);
+        }
+
         if let Event::Key(key) = event {
             if key.kind != KeyEventKind::Press {
-                return Ok(ComponentInputResult::Handled);
-            }
-
-            if self.popup.is_opened() {
-                if key.code == KeyCode::Char('q') || key.code == KeyCode::Esc {
-                    self.popup = ConfirmDialogState::default();
-                } else {
-                    self.popup.handle(key);
-                }
-
-                return Ok(ComponentInputResult::Handled);
-            }
-
-            if self.head_panel.input(key) {
                 return Ok(ComponentInputResult::Handled);
             }
 
