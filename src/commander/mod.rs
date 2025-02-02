@@ -18,7 +18,7 @@ use std::sync::Mutex;
 use std::{
     ffi::OsStr,
     io,
-    process::{Command, Output},
+    process::{Command, Output, Stdio},
     string::FromUtf8Error,
     sync::Arc,
 };
@@ -154,6 +154,27 @@ impl Commander {
         }
 
         self.execute_command(&mut command)
+    }
+
+    /// Execute an interactive jj command
+    pub fn execute_interactive_jj_command<I, S>(
+        &mut self,
+        args: I,
+    ) -> Result<(), CommandError>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
+        let mut command = Command::new("jj");
+        command.stdout(Stdio::inherit());
+        command.args(args);
+
+        if let Some(jj_config_toml) = &self.jj_config_toml {
+            command.args(vec!["--config-toml", jj_config_toml]);
+        }
+
+        self.execute_command(&mut command)?;
+        Ok(())
     }
 
     /// Execute a jj command without using the output.

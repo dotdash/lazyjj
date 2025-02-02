@@ -35,7 +35,7 @@ impl Commander {
     /// Squash changes. Maps to `jj squash -u --into <revision>`
     #[instrument(level = "trace", skip(self))]
     pub fn run_squash(&mut self, revision: &str) -> Result<()> {
-        self.execute_void_jj_command(vec!["squash", "-u", "--into", revision])
+        self.execute_interactive_jj_command(vec!["squash", "-u", "-i", "--into", revision])
             .context("Failed executing jj squash")
     }
 
