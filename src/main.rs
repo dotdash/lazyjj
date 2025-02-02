@@ -152,8 +152,16 @@ fn run_app<B: Backend>(
     app: &mut App,
     commander: &mut Commander,
 ) -> Result<()> {
+    let mut needs_clear = true;
     loop {
         app.update(commander)?;
+        needs_clear = true;
+        // TODO: This clears too often, the component action should signal if a clear is needed
+        if needs_clear {
+            terminal.clear()?;
+            needs_clear = false;
+        }
+
         terminal.draw(|f| {
             let _ = ui(f, app);
         })?;

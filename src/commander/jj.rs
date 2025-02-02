@@ -56,15 +56,22 @@ impl Commander {
         Ok(self.execute_void_jj_command(vec!["rebase", src_mode, src_rev, tgt_mode, tgt_rev])?)
     }
 
+    /// Describe change
+    #[instrument(level = "trace", skip(self))]
+    pub fn run_describe_interactive(&self, revision: &str) -> Result<()> {
+        self.execute_interactive_jj_command(vec!["describe", revision])
+            .context("Failed executing jj describe")
+    }
+
     /// Squash changes. Maps to `jj squash -u --into <revision>`
     #[instrument(level = "trace", skip(self))]
-    pub fn run_squash(&mut self, revision: &str, ignore_immutable: bool) -> Result<()> {
-        let mut args = vec!["squash", "-u", "--into", revision];
+    pub fn run_squash(&self, revision: &str, ignore_immutable: bool) -> Result<()> {
+        let mut args = vec!["squash", "-u", "-i", "--into", revision];
         if ignore_immutable {
             args.push("--ignore-immutable");
         }
 
-        self.execute_void_jj_command(args)
+        self.execute_interactive_jj_command(args)
             .context("Failed executing jj squash")
     }
 

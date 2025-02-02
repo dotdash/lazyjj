@@ -311,6 +311,22 @@ impl<'a> LogTab<'a> {
                         .open();
                 }
             }
+            LogTabEvent::DescribeInteractive => {
+                if self.head.immutable {
+                    return Ok(ComponentInputResult::HandledAction(
+                        ComponentAction::SetPopup(Some(Box::new(MessagePopup {
+                            title: "Describe".into(),
+                            messages: vec![
+                                "The change cannot be described because it is immutable.".into(),
+                            ]
+                            .into(),
+                            text_align: None,
+                        }))),
+                    ));
+                } else {
+                    commander.run_describe_interactive(self.head.commit_id.as_str())?
+                }
+            }
             LogTabEvent::Describe => {
                 if self.head.immutable {
                     return Ok(ComponentInputResult::HandledAction(
