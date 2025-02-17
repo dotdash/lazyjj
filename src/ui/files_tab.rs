@@ -287,7 +287,7 @@ impl Component for FilesTab {
                 return Ok(ComponentInputResult::Handled);
             }
 
-            if self.diff_panel.input(key) {
+            if self.diff_panel.input(&event) {
                 return Ok(ComponentInputResult::Handled);
             }
 
