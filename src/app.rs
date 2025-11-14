@@ -223,6 +223,12 @@ impl<'a> App<'a> {
 
     #[instrument(level = "trace", skip(self, commander))]
     pub fn update(&mut self, commander: &mut Commander) -> Result<()> {
+        if let Some(popup) = self.popup.as_mut()
+            && let Some(component_action) = popup.update(commander)?
+        {
+            self.handle_action(component_action, commander)?;
+        }
+
         if let Some(component_action) =
             self.get_or_init_current_tab(commander)?.update(commander)?
         {

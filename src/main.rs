@@ -157,21 +157,22 @@ fn run_app<B: Backend>(
             let _ = ui(f, app);
         })?;
 
-        // Input
-        let event = loop {
+        // Allow popups like the fetch animation to update every 100ms, if there is no popup, just
+        // wait for an incoming event
+        if app.popup.is_none() || event::poll(std::time::Duration::from_millis(100))? {
             match event::read()? {
                 event::Event::FocusLost => continue,
                 Event::Mouse(MouseEvent {
                     kind: MouseEventKind::Moved,
                     ..
                 }) => continue,
-                event => break event,
+                event => {
+                    app.stats.start_time = Instant::now();
+                    if app.input(event, commander)? {
+                        return Ok(());
+                    }
+                }
             }
-        };
-
-        app.stats.start_time = Instant::now();
-        if app.input(event, commander)? {
-            return Ok(());
         }
     }
 }
