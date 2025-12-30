@@ -26,7 +26,7 @@ use ratatui::{
         },
     },
 };
-use tracing::{info, trace_span};
+use tracing::info;
 use tracing_chrome::ChromeLayerBuilder;
 use tracing_subscriber::layer::SubscriberExt;
 
@@ -152,31 +152,12 @@ fn run_app<B: Backend>(
     commander: &mut Commander,
 ) -> Result<()> {
     loop {
-        // Draw
-        let mut terminal_draw_res = Ok(());
+        app.update(commander)?;
         terminal.draw(|f| {
-            // Update current tab
-            let update_span = trace_span!("update");
-            terminal_draw_res = update_span.in_scope(|| -> Result<()> {
-                if let Some(component_action) =
-                    app.get_or_init_current_tab(commander)?.update(commander)?
-                {
-                    app.handle_action(component_action, commander)?;
-                }
-
-                Ok(())
-            });
-            if terminal_draw_res.is_err() {
-                return;
-            }
-
-            let draw_span = trace_span!("draw");
-            terminal_draw_res = draw_span.in_scope(|| ui(f, app));
+            let _ = ui(f, app);
         })?;
-        terminal_draw_res?;
 
         // Input
-        let input_spawn = trace_span!("input");
         let event = loop {
             match event::read()? {
                 event::Event::FocusLost => continue,
@@ -189,15 +170,7 @@ fn run_app<B: Backend>(
         };
 
         app.stats.start_time = Instant::now();
-        let should_stop = input_spawn.in_scope(|| -> Result<bool> {
-            if app.input(event, commander)? {
-                return Ok(true);
-            }
-
-            Ok(false)
-        })?;
-
-        if should_stop {
+        if app.input(event, commander)? {
             return Ok(());
         }
     }

@@ -25,6 +25,7 @@ use ratatui::{
     symbols,
 };
 use ratatui::{prelude::*, widgets::*};
+use tracing::instrument;
 
 pub enum ComponentAction {
     ViewFiles(Head),
@@ -50,6 +51,7 @@ pub trait Component {
     fn input(&mut self, commander: &mut Commander, event: Event) -> Result<ComponentInputResult>;
 }
 
+#[instrument(level = "trace", name = "draw", skip(f, app))]
 pub fn ui(f: &mut Frame, app: &mut App) -> Result<()> {
     let chunks = Layout::default()
         .direction(Direction::Vertical)

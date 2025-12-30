@@ -33,7 +33,7 @@ pub struct CommandLogTab {
 }
 
 impl CommandLogTab {
-    #[instrument(level = "trace", skip(commander))]
+    #[instrument(level = "info", name = "Initializing command log tab", parent = None, skip(commander))]
     pub fn new(commander: &mut Commander) -> Result<Self> {
         let command_history = commander.command_history.lock().unwrap().clone();
         let selected_index = command_history.first().map(|_| 0);

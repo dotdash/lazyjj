@@ -78,7 +78,7 @@ pub struct LogTab<'a> {
 }
 
 impl<'a> LogTab<'a> {
-    #[instrument(level = "trace", skip(commander))]
+    #[instrument(level = "info", name = "Initializing log tab", parent = None, skip(commander))]
     pub fn new(commander: &mut Commander) -> Result<Self> {
         let diff_format = commander.env.config.diff_format();
 

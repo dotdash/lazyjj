@@ -111,7 +111,7 @@ fn get_current_bookmark_index(
 }
 
 impl BookmarksTab<'_> {
-    #[instrument(level = "trace", skip(commander))]
+    #[instrument(level = "info", name = "Initializing bookmarks tab", parent = None, skip(commander))]
     pub fn new(commander: &mut Commander) -> Result<Self> {
         let diff_format = commander.env.config.diff_format();
 

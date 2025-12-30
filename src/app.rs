@@ -11,7 +11,7 @@ use anyhow::{Result, anyhow};
 use core::fmt;
 use ratatui::crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use std::time::Instant;
-use tracing::{info, info_span};
+use tracing::{info, instrument};
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum Tab {
@@ -102,9 +102,7 @@ impl<'a> App<'a> {
 
     pub fn get_log_tab(&mut self, commander: &mut Commander) -> Result<&mut LogTab<'a>> {
         if self.log.is_none() {
-            let span = info_span!("Initializing log tab");
-            let log_tab = span.in_scope(|| LogTab::new(commander))?;
-            self.log = Some(log_tab);
+            self.log = Some(LogTab::new(commander)?);
         }
 
         self.log
@@ -114,12 +112,8 @@ impl<'a> App<'a> {
 
     pub fn get_files_tab(&mut self, commander: &mut Commander) -> Result<&mut FilesTab> {
         if self.files.is_none() {
-            let span = info_span!("Initializing files tab");
-            let files_tab = span.in_scope(|| {
-                let current_head = commander.get_current_head()?;
-                FilesTab::new(commander, &current_head)
-            })?;
-            self.files = Some(files_tab);
+            let current_head = commander.get_current_head()?;
+            self.files = Some(FilesTab::new(commander, &current_head)?);
         }
 
         self.files
@@ -132,9 +126,7 @@ impl<'a> App<'a> {
         commander: &mut Commander,
     ) -> Result<&mut BookmarksTab<'a>> {
         if self.bookmarks.is_none() {
-            let span = info_span!("Initializing bookmarks tab");
-            let bookmarks_tab = span.in_scope(|| BookmarksTab::new(commander))?;
-            self.bookmarks = Some(bookmarks_tab);
+            self.bookmarks = Some(BookmarksTab::new(commander)?);
         }
 
         self.bookmarks
@@ -144,9 +136,7 @@ impl<'a> App<'a> {
 
     pub fn get_command_log_tab(&mut self, commander: &mut Commander) -> Result<&mut CommandLogTab> {
         if self.command_log.is_none() {
-            let span = info_span!("Initializing command log tab");
-            let command_log_tab = span.in_scope(|| CommandLogTab::new(commander))?;
-            self.command_log = Some(command_log_tab);
+            self.command_log = Some(CommandLogTab::new(commander)?);
         }
 
         self.command_log
@@ -231,6 +221,18 @@ impl<'a> App<'a> {
         Ok(())
     }
 
+    #[instrument(level = "trace", skip(self, commander))]
+    pub fn update(&mut self, commander: &mut Commander) -> Result<()> {
+        if let Some(component_action) =
+            self.get_or_init_current_tab(commander)?.update(commander)?
+        {
+            self.handle_action(component_action, commander)?;
+        }
+
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(self, commander))]
     pub fn input(&mut self, event: Event, commander: &mut Commander) -> Result<bool> {
         if let Some(popup) = self.popup.as_mut() {
             match popup.input(commander, event.clone())? {
