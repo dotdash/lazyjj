@@ -10,6 +10,7 @@ use crate::{
 use anyhow::{Result, anyhow};
 use core::fmt;
 use ratatui::crossterm::event::{self, Event, KeyCode, KeyModifiers};
+use std::time::Instant;
 use tracing::{info, info_span};
 
 #[derive(PartialEq, Copy, Clone)]
@@ -35,6 +36,10 @@ impl Tab {
     pub const VALUES: [Self; 4] = [Tab::Log, Tab::Files, Tab::Bookmarks, Tab::CommandLog];
 }
 
+pub struct Stats {
+    pub start_time: Instant,
+}
+
 pub struct App<'a> {
     pub env: Env,
     pub current_tab: Tab,
@@ -43,6 +48,7 @@ pub struct App<'a> {
     pub bookmarks: Option<BookmarksTab<'a>>,
     pub command_log: Option<CommandLogTab>,
     pub popup: Option<Box<dyn Component>>,
+    pub stats: Stats,
 }
 
 impl<'a> App<'a> {
@@ -55,6 +61,9 @@ impl<'a> App<'a> {
             bookmarks: None,
             command_log: None,
             popup: None,
+            stats: Stats {
+                start_time: Instant::now(),
+            },
         })
     }
 

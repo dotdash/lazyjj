@@ -11,8 +11,6 @@ pub mod rebase_popup;
 pub mod styles;
 pub mod utils;
 
-use std::time::Instant;
-
 use crate::{
     ComponentInputResult,
     app::{App, Tab},
@@ -53,8 +51,6 @@ pub trait Component {
 }
 
 pub fn ui(f: &mut Frame, app: &mut App) -> Result<()> {
-    let start_time = Instant::now();
-
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Length(3), Constraint::Min(1)])
@@ -110,7 +106,7 @@ pub fn ui(f: &mut Frame, app: &mut App) -> Result<()> {
     }
 
     {
-        let paragraph = Paragraph::new(format!("{}ms", start_time.elapsed().as_millis()))
+        let paragraph = Paragraph::new(format!("{}ms", app.stats.start_time.elapsed().as_millis()))
             .alignment(Alignment::Right);
         let position = Rect {
             x: 0,
