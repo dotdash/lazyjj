@@ -58,7 +58,7 @@ fn get_current_file_index(
 }
 
 impl FilesTab {
-    #[instrument(level = "trace", skip(commander))]
+    #[instrument(level = "info", name = "Initializing files tab", parent = None, skip(commander))]
     pub fn new(commander: &mut Commander, head: &Head) -> Result<Self> {
         let head = head.clone();
         let is_current_head = head == commander.get_current_head()?;
