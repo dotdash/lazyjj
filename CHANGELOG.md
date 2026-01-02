@@ -11,3 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Details panel responds to mouse scroll in all tabs
 - Details panel sets COLUMNS to allow jj diff tool to fit window
+
+### Changed
+
+- Move from bookmark-prefix to bookmark-template for the bookmark generation to match the behaviour from jj 0.31+

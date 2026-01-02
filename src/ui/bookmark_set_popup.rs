@@ -57,7 +57,7 @@ fn generate_options(
     let mut options = vec![BookmarkSetOption::CreateBookmark];
 
     if let Some(change_id) = change_id {
-        let generated_name = generate_name(&commander.env.config.bookmark_prefix(), change_id);
+        let generated_name = generate_name(commander, change_id);
         let exists = bookmarks.as_ref().is_ok_and(|bookmarks| {
             bookmarks
                 .iter()
@@ -81,10 +81,10 @@ fn generate_options(
     options
 }
 
-fn generate_name(git_push_bookmark_prefix: &str, change_id: &ChangeId) -> String {
-    let mut change_id = change_id.to_string();
-    change_id.truncate(12);
-    format!("{git_push_bookmark_prefix}{change_id}",)
+fn generate_name(commander: &Commander, change_id: &ChangeId) -> String {
+    commander
+        .generate_bookmark_name(change_id)
+        .unwrap_or_else(|_| format!("error-{change_id}"))
 }
 
 impl BookmarkSetPopup<'_> {
@@ -135,7 +135,7 @@ impl BookmarkSetPopup<'_> {
     }
     fn generate_bookmark(&self, commander: &mut Commander) -> Result<()> {
         if let Some(change_id) = self.change_id.as_ref() {
-            let generated_name = generate_name(&commander.env.config.bookmark_prefix(), change_id);
+            let generated_name = generate_name(commander, change_id);
             if commander
                 .get_bookmarks_list(false)?
                 .iter()

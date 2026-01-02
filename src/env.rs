@@ -18,8 +18,8 @@ pub struct Config {
     lazyjj_diff_format: Option<DiffFormat>,
     #[serde(rename = "lazyjj.diff-tool")]
     lazyjj_diff_tool: Option<String>,
-    #[serde(rename = "lazyjj.bookmark-prefix")]
-    lazyjj_bookmark_prefix: Option<String>,
+    #[serde(rename = "lazyjj.bookmark-template")]
+    lazyjj_bookmark_template: Option<String>,
     #[serde(rename = "lazyjj.layout")]
     lazyjj_layout: Option<JJLayout>,
     #[serde(rename = "lazyjj.layout-percent")]
@@ -30,8 +30,8 @@ pub struct Config {
     ui_diff_format: Option<DiffFormat>,
     #[serde(rename = "ui.diff.tool")]
     ui_diff_tool: Option<()>,
-    #[serde(rename = "git.push-bookmark-prefix")]
-    git_push_bookmark_prefix: Option<String>,
+    #[serde(rename = "templates.git_push_bookmark")]
+    git_push_bookmark_template: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone, Default)]
@@ -39,7 +39,7 @@ pub struct Config {
 pub struct JjConfig {
     lazyjj: Option<JjConfigLazyjj>,
     ui: Option<JjConfigUi>,
-    git: Option<JjConfigGit>,
+    templates: Option<JjConfigTemplates>,
 }
 
 #[derive(Deserialize, Debug, Clone, Default)]
@@ -68,9 +68,8 @@ pub struct JjConfigUiDiff {
 }
 
 #[derive(Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "kebab-case")]
-pub struct JjConfigGit {
-    push_bookmark_prefix: Option<String>,
+pub struct JjConfigTemplates {
+    git_push_bookmark: Option<String>,
 }
 
 impl Config {
@@ -102,12 +101,11 @@ impl Config {
             .unwrap_or(Color::Rgb(50, 50, 150))
     }
 
-    pub fn bookmark_prefix(&self) -> String {
-        self.lazyjj_bookmark_prefix.clone().unwrap_or(
-            self.git_push_bookmark_prefix
-                .clone()
-                .unwrap_or("push-".to_owned()),
-        )
+    pub fn bookmark_template(&self) -> String {
+        self.lazyjj_bookmark_template
+            .clone()
+            .or(self.git_push_bookmark_template.clone())
+            .unwrap_or("'push-' ++ change_id.short()".to_string())
     }
 
     pub fn layout(&self) -> JJLayout {
@@ -186,7 +184,7 @@ impl Env {
                             .lazyjj
                             .as_ref()
                             .and_then(|lazyjj| lazyjj.diff_tool.clone()),
-                        lazyjj_bookmark_prefix: config
+                        lazyjj_bookmark_template: config
                             .lazyjj
                             .as_ref()
                             .and_then(|lazyjj| lazyjj.bookmark_prefix.clone()),
@@ -208,9 +206,9 @@ impl Env {
                                 .as_ref()
                                 .and_then(|diff| diff.tool.as_ref().map(|_| ()))
                         }),
-                        git_push_bookmark_prefix: config
-                            .git
-                            .and_then(|git| git.push_bookmark_prefix),
+                        git_push_bookmark_template: config
+                            .templates
+                            .and_then(|templates| templates.git_push_bookmark),
                     })?
             }
         };
