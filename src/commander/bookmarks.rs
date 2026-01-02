@@ -7,7 +7,7 @@ other jj bookmark commands are defined in module [jj][super::jj].
 It is mostly used in the [bookmarks_tab][crate::ui::bookmarks_tab] module.
 */
 use crate::{
-    commander::{CommandError, Commander, RemoveEndLine},
+    commander::{CommandError, Commander, RemoveEndLine, ids::ChangeId},
     env::DiffFormat,
 };
 use ansi_to_tui::IntoText;
@@ -185,6 +185,22 @@ impl Commander {
         }
 
         Ok(self.execute_jj_command(args, true, true)?.remove_end_line())
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    pub fn generate_bookmark_name(&self, change_id: &ChangeId) -> Result<String, CommandError> {
+        self.execute_jj_command(
+            [
+                "show",
+                "--no-patch",
+                "--template",
+                self.env.config.bookmark_template().as_str(),
+                "-r",
+                change_id.as_str(),
+            ],
+            false,
+            false,
+        )
     }
 }
 

@@ -53,8 +53,8 @@ You can optionally configure the following options through your jj config:
   - If `lazyjj.diff-format` is not set but `ui.diff.format` is, the latter will be used
 - `lazyjj.diff-tool`: Specify which diff tool to use by default
   - If `lazyjj.diff-tool` is not set but `ui.diff.tool` is, the latter will be used
-- `lazyjj.bookmark-prefix`: Change the bookmark name prefix for generated bookmark names. Defaults to `push-`
-  - If `lazyjj.bookmark-prefix` is not set but `git.push-bookmark-prefix` is, the latter will be used
+- `lazyjj.bookmark-template`: Change the bookmark name template for generated bookmark names. Defaults to `'push-' ++ change_id.short()`
+  - If `lazyjj.bookmark-template` is not set but `templates.git_push_bookmark` is, the latter will be used
 - `lazyjj.layout`: Changes the layout of the main and details panel. Can be `horizontal` (default) or `vertical`
 - `lazyjj.layout-percent`: Changes the layout split of the main page. Should be number between 0 and 100. Defaults to `50`
 
