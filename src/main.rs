@@ -65,7 +65,7 @@ struct Args {
 }
 
 fn main() -> Result<()> {
-    let should_log = std::env::var("LAZYJJ_LOG")
+    let should_log = std::env::var("BLAZINGJJ_LOG")
         .map(|log| log == "1" || log.eq_ignore_ascii_case("true"))
         .unwrap_or(false);
 
@@ -73,7 +73,7 @@ fn main() -> Result<()> {
         let log_file = OpenOptions::new()
             .append(true)
             .create(true)
-            .open("lazyjj.log")
+            .open("blazingjj.log")
             .unwrap();
 
         Some(
@@ -87,7 +87,7 @@ fn main() -> Result<()> {
         None
     };
 
-    let should_trace = std::env::var("LAZYJJ_TRACE")
+    let should_trace = std::env::var("BLAZINGJJ_TRACE")
         .map(|log| log == "1" || log.eq_ignore_ascii_case("true"))
         .unwrap_or(false);
     let (trace_layer, _guard) = if should_trace {
@@ -102,7 +102,7 @@ fn main() -> Result<()> {
         .with(trace_layer);
     tracing::subscriber::set_global_default(subscriber)?;
 
-    info!("Starting lazyjj");
+    info!("Starting blazingjj");
 
     // Parse arguments and determine path
     let args = Args::parse();

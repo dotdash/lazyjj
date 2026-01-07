@@ -13,7 +13,7 @@ This module implements the low level functions used by the
 command implementation functions:
 
 * [Commander::new] - Create a new instance
-* [Commander::check_jj_version] - Check jj works with lazyjj
+* [Commander::check_jj_version] - Check jj works with blazingjj
 * [Commander::execute_command] - Execute any command and log the result
 * [Commander::execute_jj_command] - Execute a jj command.
 * [Commander::execute_void_jj_command] - Execute a jj command and discard the output.
@@ -48,7 +48,7 @@ use thiserror::Error;
 use tracing::{instrument, trace};
 use version_compare::{Cmp, compare};
 
-/// The oldest version of jj that is known to work with lazyjj.
+/// The oldest version of jj that is known to work with blazingjj.
 /// 0.33.0 changed the template language for evolog/obslog
 const JJ_MIN_VERSION: &str = "0.33.0";
 const JJ_VERSION_IGNORE_HELP: &str = "If you want to continue anyway, use --ignore-jj-version";
@@ -230,7 +230,7 @@ impl Commander {
         Ok(())
     }
 
-    /// Check that the version of jj is recent enough to work with lazyjj
+    /// Check that the version of jj is recent enough to work with blazingjj
     ///
     /// See also [JJ_MIN_VERSION]
     #[instrument(level = "trace", skip(self))]
@@ -319,11 +319,11 @@ pub mod tests {
 
     impl TestRepo {
         pub fn new() -> Result<Self> {
-            let directory = TempDir::new("lazyjj")?;
+            let directory = TempDir::new("blazingjj")?;
 
             let jj_config_toml = vec![
-                r#"user.email="lazyjj@example.com""#.to_owned(),
-                r#"user.name="lazyjj""#.to_owned(),
+                r#"user.email="blazingjj@example.com""#.to_owned(),
+                r#"user.name="blazingjj""#.to_owned(),
                 r#"ui.color="never""#.to_owned(),
             ];
 

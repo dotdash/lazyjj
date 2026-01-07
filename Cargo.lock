@@ -116,6 +116,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "blazingjj"
+version = "0.6.1"
+dependencies = [
+ "ansi-to-tui",
+ "anyhow",
+ "chrono",
+ "clap",
+ "insta",
+ "itertools 0.14.0",
+ "ratatui",
+ "regex",
+ "serde",
+ "serde_with",
+ "shell-words",
+ "tempdir",
+ "thiserror 2.0.17",
+ "toml",
+ "tracing",
+ "tracing-chrome",
+ "tracing-log",
+ "tracing-subscriber",
+ "tui-textarea",
+ "tui_confirm_dialog",
+ "version-compare",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -594,33 +621,6 @@ name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
-
-[[package]]
-name = "lazyjj"
-version = "0.6.1"
-dependencies = [
- "ansi-to-tui",
- "anyhow",
- "chrono",
- "clap",
- "insta",
- "itertools 0.14.0",
- "ratatui",
- "regex",
- "serde",
- "serde_with",
- "shell-words",
- "tempdir",
- "thiserror 2.0.17",
- "toml",
- "tracing",
- "tracing-chrome",
- "tracing-log",
- "tracing-subscriber",
- "tui-textarea",
- "tui_confirm_dialog",
- "version-compare",
-]
 
 [[package]]
 name = "libc"
