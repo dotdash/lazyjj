@@ -1,6 +1,12 @@
-# blazingjj
+<div class="title-block" style="text-align: center;" align="center">
 
-TUI for [Jujutsu/jj](https://github.com/martinvonz/jj). Built in Rust with Ratatui. Interacts with `jj` CLI.
+# blazingjj - A TUI for [Jujutsu/jj](https://github.com/jj-vcs/jj)
+
+<p><img title="blazingjj logo" src="docs/logo.png" width="320" height="320"></p>
+
+Built in Rust with Ratatui. Interacts with `jj` CLI.
+
+</div>
 
 ## Features
 
