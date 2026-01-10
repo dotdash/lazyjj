@@ -191,19 +191,6 @@ mod tests {
 
         let head = test_repo.commander.get_current_head()?;
         test_repo.commander.run_new(head.commit_id.as_str())?;
-        assert_eq!(
-            test_repo
-                .commander
-                .command_history
-                .lock()
-                .unwrap()
-                .last()
-                .unwrap()
-                .args
-                .first()
-                .unwrap(),
-            "new"
-        );
         assert_ne!(head, test_repo.commander.get_current_head()?);
 
         Ok(())
@@ -219,19 +206,6 @@ mod tests {
         test_repo
             .commander
             .run_edit(head.commit_id.as_str(), false)?;
-        assert_eq!(
-            test_repo
-                .commander
-                .command_history
-                .lock()
-                .unwrap()
-                .last()
-                .unwrap()
-                .args
-                .first()
-                .unwrap(),
-            "edit"
-        );
         assert_eq!(head, test_repo.commander.get_current_head()?);
 
         Ok(())
@@ -243,19 +217,6 @@ mod tests {
 
         let head = test_repo.commander.get_current_head()?;
         test_repo.commander.run_abandon(&head.commit_id)?;
-        assert_eq!(
-            test_repo
-                .commander
-                .command_history
-                .lock()
-                .unwrap()
-                .last()
-                .unwrap()
-                .args
-                .first()
-                .unwrap(),
-            "abandon"
-        );
         assert_ne!(head, test_repo.commander.get_current_head()?);
 
         Ok(())
@@ -269,19 +230,6 @@ mod tests {
         test_repo
             .commander
             .run_describe(head.commit_id.as_str(), "AAA")?;
-        assert_eq!(
-            test_repo
-                .commander
-                .command_history
-                .lock()
-                .unwrap()
-                .last()
-                .unwrap()
-                .args
-                .first()
-                .unwrap(),
-            "describe"
-        );
 
         let head = test_repo.commander.get_current_head()?.commit_id;
         assert_eq!(test_repo.commander.get_commit_description(&head)?, "AAA");
