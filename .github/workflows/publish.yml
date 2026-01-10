@@ -26,14 +26,14 @@ jobs:
             os: macos-14
             target: x86_64-apple-darwin
           - build: macos-aarch64
-            os: macos-15
+            os: macos-14
             target: aarch64-apple-darwin
           - build: win-msvc
             os: windows-2022
             target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -68,7 +68,7 @@ jobs:
     name: Publish crates.io
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
