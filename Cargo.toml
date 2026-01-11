@@ -15,7 +15,7 @@ pkg-url = "{ repo }/releases/download/v{ version }/blazingjj-v{ version }-{ targ
 
 
 [dependencies]
-ansi-to-tui = { git = "https://github.com/Cretezy/ansi-to-tui.git", rev = "74bd97e" }
+ansi-to-tui = "7.0.0"
 anyhow = "1.0.95"
 chrono = "0.4.39"
 clap = { version = "4.5.31", features = ["derive", "env"] }
@@ -39,6 +39,9 @@ tracing-subscriber = "0.3.19"
 tui-textarea = "0.7.0"
 tui_confirm_dialog = "0.3.1"
 version-compare = "0.2.0"
+
+[patch.crates-io]
+ansi-to-tui = { git = "https://github.com/Cretezy/ansi-to-tui.git", rev = "74bd97e" }
 
 # Release build optimize size.
 # Run strip manually after build to reduce further.
