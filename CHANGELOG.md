@@ -20,5 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move from bookmark-prefix to bookmark-template for the bookmark generation to match the behaviour from jj 0.31+
 - Fork project and change name from "lazyjj" to "blazingjj"
 
+### Removed
+
+- The Command log tab
+
 <!-- next-url -->
 [Unreleased]: https://github.com/blazingjj/blazingjj/compare/v0.6.1...HEAD
