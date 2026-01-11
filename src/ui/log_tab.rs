@@ -135,13 +135,8 @@ impl<'a> LogTab<'a> {
         })
     }
 
-    /// Update change details panel if the selection has changed
+    /// Update change details panel
     fn sync_head_output(&mut self, commander: &mut Commander) {
-        if self.head == self.log_panel.head {
-            // log panel and head panel agree on head
-            return;
-        }
-        // Update head panel to show new head
         self.head = self.log_panel.head.clone();
         self.refresh_head_output(commander);
     }
@@ -149,10 +144,21 @@ impl<'a> LogTab<'a> {
     fn refresh_head_output(&mut self, commander: &mut Commander) {
         let inner_width = self.head_panel.columns() as usize;
         commander.limit_width(inner_width);
-        self.head_output = commander
+        let new_output = commander
             .get_commit_show(&self.head.commit_id, &self.diff_format, true)
             .map(|text| tabs_to_spaces(&text));
-        self.head_panel.scroll_to(0);
+
+        let content_changed = match (&self.head_output, &new_output) {
+            (Ok(old), Ok(new)) => old != new,
+            (Err(old), Err(new)) => old.to_string() != new.to_string(),
+            _ => true,
+        };
+
+        // Only update if content actually changed to prevent scroll jumping
+        if content_changed {
+            self.head_output = new_output;
+            self.head_panel.scroll_to(0);
+        }
     }
 
     pub fn set_head(&mut self, commander: &mut Commander, head: Head) {
