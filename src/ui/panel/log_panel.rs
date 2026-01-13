@@ -377,6 +377,7 @@ impl Component for LogPanel<'_> {
                     ) && let Some(head) = self.head_at_log_line(inx)
                     {
                         self.set_head(head);
+                        return Ok(ComponentInputResult::Handled);
                     }
                 }
                 _ => {} // Handle other mouse events if necessary
