@@ -151,7 +151,7 @@ impl Commander {
             path
         };
 
-        let fileset = format!("file:\"{}\"", path.replace('"', "\\\""));
+        let fileset = Self::get_file_revset(path);
         let mut args = vec!["diff", "-r", head.commit_id.as_str(), &fileset];
         args.append(&mut diff_format.get_args());
         if ignore_working_copy {
@@ -178,7 +178,7 @@ impl Commander {
             path
         };
 
-        let fileset = format!("file:\"{}\"", path.replace('"', "\\\""));
+        let fileset = Self::get_file_revset(path);
         Ok(Some(self.execute_jj_command(
             vec!["file", "untrack", &fileset],
             false,
@@ -203,12 +203,19 @@ impl Commander {
             path
         };
 
-        let fileset = format!("file:\"{}\"", path.replace('"', "\\\""));
+        let fileset = Self::get_file_revset(path);
         Ok(Some(self.execute_jj_command(
             vec!["restore", &fileset],
             false,
             true,
         )?))
+    }
+
+    fn get_file_revset(path: &str) -> String {
+        format!(
+            "file:\"{}\"",
+            path.replace("\\", "\\\\").replace('"', "\\\"")
+        )
     }
 }
 
