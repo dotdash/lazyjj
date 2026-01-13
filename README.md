@@ -170,6 +170,15 @@ blazingjj has 2 debugging tools:
 1. Logging: Enabled by setting `BLAZINGJJ_LOG=1` when running. Produces a `blazingjj.log` log file
 2. Tracing: Enabled by setting `BLAZINGJJ_TRACE=1` when running. Produces `trace-*.json` Chrome trace file, for `chrome://tracing` or [ui.perfetto.dev](https://ui.perfetto.dev)
 
+## Release process
+
+Create a release commit using [cargo
+release](https://github.com/crate-ci/cargo-release), e.g. `cargo release
+minor`, then open a PR and after it has been merged, create a GitHub release
+for that commit. The "Release" workflow will fill in the description from the
+changelog, generate and attach the binaries and publish the new version to
+crates.io. That's it.
+
 ## Acknowledgements
 
 Blazingjj is a fork of lazyjj, started by Charles Crete in 2023.
