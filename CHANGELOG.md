@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - ReleaseDate
 
+## [0.7.0] - 2026-01-13
+
 ### Added
 
 - Details panel responds to mouse scroll in all tabs
@@ -26,4 +28,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Command log tab
 
 <!-- next-url -->
-[Unreleased]: https://github.com/blazingjj/blazingjj/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/blazingjj/blazingjj/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/blazingjj/blazingjj/compare/v0.6.1...v0.7.0
