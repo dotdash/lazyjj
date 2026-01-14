@@ -2,19 +2,21 @@
 
 use ansi_to_tui::IntoText;
 use anyhow::Result;
+use lru::LruCache;
 use ratatui::{
     crossterm::event::{Event, KeyEventKind},
     layout::Rect,
     prelude::*,
     widgets::*,
 };
+use std::num::NonZeroUsize;
 use tracing::instrument;
 use tui_confirm_dialog::{ButtonLabel, ConfirmDialog, ConfirmDialogState, Listener};
 use tui_textarea::{CursorMove, TextArea};
 
 use crate::{
     ComponentInputResult,
-    commander::{CommandError, Commander, log::Head},
+    commander::{Commander, ids::CommitId, log::Head},
     env::{Config, DiffFormat},
     keybinds::{LogTabEvent, LogTabKeybinds},
     ui::{
@@ -35,6 +37,17 @@ const EDIT_POPUP_ID: u16 = 2;
 const ABANDON_POPUP_ID: u16 = 3;
 const SQUASH_POPUP_ID: u16 = 4;
 
+/// Up to this limit all commits are cached. After this, the least
+/// recently used will be discarded to make room for a commit that
+/// is not in the cache.
+const COMMIT_SHOW_CACHE_LIMIT: usize = 1000;
+
+/// Commit show depends on all these values
+type CommitShowKey = (CommitId, /*inner width*/ usize, DiffFormat);
+
+/// The output from 'jj show'
+type CommitShowValue<'a> = Vec<Line<'a>>;
+
 /// Log tab. Shows `jj log` in main panel and shows selected change details of in details panel.
 pub struct LogTab<'a> {
     /// The revset filter to apply to jj log
@@ -43,14 +56,21 @@ pub struct LogTab<'a> {
     /// The list of changes shown to the left
     log_panel: LogPanel<'a>,
 
-    /// The change content shown to the right
+    /// The panel showing change content to the right
     head_panel: DetailsPanel,
-    head_output: Result<String, CommandError>,
+
+    /// The selected change content key in the cache
+    head_key: CommitShowKey,
+    /// The selected change content value to show
+    head_content: CommitShowValue<'a>,
+
+    /// Cached change content
+    commit_show_cache: LruCache<CommitShowKey, CommitShowValue<'a>>,
 
     /// The currently selected change. Indicates what to render
-    /// in head_output. It is a copy of self.log_panel.head,
-    /// so if these differ, we need to update self.head and
-    /// self.head_output
+    /// in `self.head_content`. It is a copy of `self.log_panel.head`,
+    /// so if these differ, we need to update `self.head` and
+    /// `self.head_content`
     head: Head,
 
     // Location of panels on screen. [0] = log, [1] = details
@@ -85,9 +105,12 @@ impl<'a> LogTab<'a> {
 
         let head = commander.get_current_head()?;
 
-        let head_output = commander
-            .get_commit_show(&head.commit_id, &diff_format, true)
-            .map(|text| tabs_to_spaces(&text));
+        let inner_width = 40; // Arbitrary width used before tab is rendered
+        let head_content =
+            Self::compute_head_content(commander, inner_width, &head.commit_id, &diff_format);
+        let head_key = (head.commit_id.clone(), inner_width, diff_format.clone());
+
+        let commit_show_cache = LruCache::new(NonZeroUsize::new(COMMIT_SHOW_CACHE_LIMIT).unwrap());
 
         let (popup_tx, popup_rx) = std::sync::mpsc::channel();
         let (bookmark_set_popup_tx, bookmark_set_popup_rx) = std::sync::mpsc::channel();
@@ -109,7 +132,10 @@ impl<'a> LogTab<'a> {
 
             head,
             head_panel: DetailsPanel::new(),
-            head_output,
+            head_key,
+            head_content,
+
+            commit_show_cache,
 
             panel_rect: [Rect::ZERO, Rect::ZERO],
 
@@ -142,22 +168,62 @@ impl<'a> LogTab<'a> {
         self.refresh_head_output(commander);
     }
 
-    fn refresh_head_output(&mut self, commander: &mut Commander) {
-        let inner_width = self.head_panel.columns() as usize;
-        commander.limit_width(inner_width);
-        let new_output = commander
-            .get_commit_show(&self.head.commit_id, &self.diff_format, true)
-            .map(|text| tabs_to_spaces(&text));
+    // TODO Add a function clear_commit_show_cache that is used
+    // if the user asks for an application refresh.
+    //fn clear_commit_show_cache(&mut self) {
+    //    self.commit_show_cache.clear();
+    //}
 
-        let content_changed = match (&self.head_output, &new_output) {
-            (Ok(old), Ok(new)) => old != new,
-            (Err(old), Err(new)) => old.to_string() != new.to_string(),
-            _ => true,
-        };
+    /// Extract head content from commander.get_commit_show
+    fn compute_head_content(
+        commander: &mut Commander,
+        inner_width: usize,
+        commit_id: &CommitId,
+        diff_format: &DiffFormat,
+    ) -> CommitShowValue<'a> {
+        // Call jj show
+        commander.limit_width(inner_width);
+        let head_output = commander
+            .get_commit_show(commit_id, diff_format, true)
+            .map(|text| tabs_to_spaces(&text));
+        // Format output as string
+        match head_output.as_ref() {
+            Ok(head_output) => {
+                head_output
+                    .into_text()
+                    .expect("valid output String can be converted into Text")
+                    .lines
+            }
+            Err(err) => err.into_text("Error getting head details").unwrap().lines,
+        }
+    }
+
+    fn refresh_head_output(&mut self, commander: &mut Commander) {
+        // If the key matches, then we can use the cached value.
+        // This is not entierly true. A reconfiguration of jj could
+        // generate different output for some keys. We probably need
+        // a forced cache clear function.
+        let commit_id = &self.head.commit_id;
+        let inner_width = self.head_panel.columns() as usize;
+        let key = (commit_id.clone(), inner_width, self.diff_format.clone());
+        let new_content = self
+            .commit_show_cache
+            .get_or_insert(key.clone(), || {
+                Self::compute_head_content(
+                    commander,
+                    inner_width,
+                    &self.head.commit_id,
+                    &self.diff_format,
+                )
+            })
+            .clone();
+
+        let content_changed = self.head_key != key;
 
         // Only update if content actually changed to prevent scroll jumping
         if content_changed {
-            self.head_output = new_output;
+            self.head_key = key;
+            self.head_content = new_content;
             self.head_panel.scroll_to(0);
         }
     }
@@ -505,10 +571,7 @@ impl Component for LogTab<'_> {
 
         // Draw change details
         {
-            let head_content = match self.head_output.as_ref() {
-                Ok(head_output) => head_output.into_text()?.lines,
-                Err(err) => err.into_text("Error getting head details")?.lines,
-            };
+            let head_content = self.head_content.clone();
             self.head_panel
                 .render_context()
                 .title(format!(" Details for {} ", self.head.change_id))
