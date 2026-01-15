@@ -5,7 +5,7 @@ use std::{
     fs::{OpenOptions, canonicalize},
     io::{self, ErrorKind},
     process::Command,
-    time::Instant,
+    time::{Duration, Instant},
 };
 
 use anyhow::{Context, Result, bail};
@@ -151,15 +151,9 @@ fn run_app<B: Backend>(
     app: &mut App,
     commander: &mut Commander,
 ) -> Result<()> {
+    let mut wait_duration = Duration::from_millis(0);
     loop {
-        app.update(commander)?;
-        terminal.draw(|f| {
-            let _ = ui(f, app);
-        })?;
-
-        // Allow popups like the fetch animation to update every 100ms, if there is no popup, just
-        // wait for an incoming event
-        if app.popup.is_none() || event::poll(std::time::Duration::from_millis(100))? {
+        if event::poll(wait_duration)? {
             match event::read()? {
                 event::Event::FocusLost => continue,
                 Event::Mouse(MouseEvent {
@@ -174,6 +168,19 @@ fn run_app<B: Backend>(
                 }
             }
         }
+
+        app.update(commander)?;
+        terminal.draw(|f| {
+            let _ = ui(f, app);
+        })?;
+
+        // Allow popups like the fetch animation to update every 100ms, if there is no popup, just
+        // wait for an incoming event
+        wait_duration = if app.popup.is_none() {
+            Duration::MAX
+        } else {
+            Duration::from_millis(100)
+        };
     }
 }
 
