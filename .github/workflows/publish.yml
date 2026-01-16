@@ -67,14 +67,10 @@ jobs:
             echo "ASSET=$name.tar.gz" >> $GITHUB_ENV
           fi
       - name: Upload release archive
-        uses: shogo82148/actions-upload-release-asset@v1.7.5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ env.ASSET }}
-          asset_name: ${{ env.ASSET }}
-          asset_content_type: application/octet-stream
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run:
+          gh release upload "${GITHUB_REF_NAME}" "${ASSET}"
   publish-cargo:
     name: Publish crates.io
     runs-on: ubuntu-latest
